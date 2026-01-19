@@ -134,3 +134,108 @@ body {
         opacity: 0.5;
     }
 }
+
+/* Transaction Form */
+.transaction-form {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.transaction-form h2 {
+    margin-top: 0;
+    color: #FFD700;
+}
+
+.transaction-form form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.transaction-form input,
+.transaction-form select {
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+.transaction-form input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.transaction-form button {
+    padding: 8px 15px;
+    background: #FFD700;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.transaction-form button:hover {
+    background: #FFA500;
+}
+
+/* Transaction List */
+.transaction-list {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.transaction-list h2 {
+    margin-top: 0;
+    color: #FFD700;
+}
+
+#transactionTable {
+    width: 100%;
+    border-collapse: collapse;
+    color: white;
+}
+
+#transactionTable th,
+#transactionTable td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#transactionTable th {
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+}
+
+.action-btn {
+    padding: 5px 10px;
+    margin: 0 2px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+
+.edit-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.edit-btn:hover {
+    background: #45a049;
+}
+
+.delete-btn {
+    background: #f44336;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #da190b;
+}
