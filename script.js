@@ -2,15 +2,35 @@
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let editingId = null;
 let chart;
+let currentFilter = 'all'; // 'all' or 'monthly'
+let currentChartType = 'pie'; // 'pie' or 'doughnut'
+let categoryFilter = null; // null or category name
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeChart();
     loadTransactions();
     setupEventListeners();
+    // Set initial values
+    document.getElementById('timeFilter').value = currentFilter;
+    document.getElementById('chartType').value = currentChartType;
 });
 
 function setupEventListeners() {
     document.getElementById('transactionForm').addEventListener('submit', handleFormSubmit);
+    document.getElementById('timeFilter').addEventListener('change', handleTimeFilterChange);
+    document.getElementById('chartType').addEventListener('change', handleChartTypeChange);
+}
+
+function handleTimeFilterChange(e) {
+    currentFilter = e.target.value;
+    loadTransactions();
+    updateChart();
+    updateTotal();
+}
+
+function handleChartTypeChange(e) {
+    currentChartType = e.target.value;
+    updateChartType();
 }
 
 function handleFormSubmit(e) {
@@ -54,8 +74,28 @@ function loadTransactions() {
     const tbody = document.getElementById('transactionBody');
     tbody.innerHTML = '';
     
-    transactions.forEach(transaction => {
+    let filteredTransactions = transactions;
+    
+    // Filter by time
+    if (currentFilter === 'monthly') {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        filteredTransactions = transactions.filter(t => {
+            const date = new Date(t.date);
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        });
+    }
+    
+    // Filter by category if selected
+    if (categoryFilter) {
+        filteredTransactions = filteredTransactions.filter(t => t.category === categoryFilter);
+    }
+    
+    filteredTransactions.forEach(transaction => {
         const row = document.createElement('tr');
+        const categoryClass = 'category-' + transaction.category.toLowerCase().replace(/\s+/g, '-');
+        row.classList.add(categoryClass);
         row.innerHTML = `
             <td>${transaction.description}</td>
             <td>$${transaction.amount.toFixed(2)}</td>
@@ -98,13 +138,46 @@ function saveTransactions() {
 }
 
 function updateTotal() {
-    const total = transactions.reduce((sum, t) => sum + t.amount, 0);
+    let filteredTransactions = transactions;
+    
+    // Filter by time
+    if (currentFilter === 'monthly') {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        filteredTransactions = transactions.filter(t => {
+            const date = new Date(t.date);
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        });
+    }
+    
+    // Filter by category if selected
+    if (categoryFilter) {
+        filteredTransactions = filteredTransactions.filter(t => t.category === categoryFilter);
+    }
+    
+    const total = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const labelText = categoryFilter ? `Total ${categoryFilter} Expenses (${currentFilter === 'monthly' ? 'This Month' : 'All Time'}):` : `Total ${currentFilter === 'monthly' ? 'Monthly' : 'All Time'} Expenses:`;
+    document.querySelector('.total .label').textContent = labelText;
     document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
 }
 
 function updateChart() {
+    let filteredTransactions = transactions;
+    
+    // Filter by time
+    if (currentFilter === 'monthly') {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        filteredTransactions = transactions.filter(t => {
+            const date = new Date(t.date);
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        });
+    }
+    
     const categoryTotals = {};
-    transactions.forEach(t => {
+    filteredTransactions.forEach(t => {
         categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
     });
     
@@ -126,7 +199,7 @@ function updateChart() {
 function initializeChart() {
     const ctx = document.getElementById('expenseChart').getContext('2d');
     chart = new Chart(ctx, {
-        type: 'pie',
+        type: currentChartType,
         data: {
             labels: [],
             datasets: [{
@@ -168,11 +241,33 @@ function initializeChart() {
             },
             onHover: (event, activeElements) => {
                 event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+            },
+            onClick: (event, activeElements) => {
+                if (activeElements.length > 0) {
+                    const index = activeElements[0].index;
+                    const category = chart.data.labels[index];
+                    toggleCategoryFilter(category);
+                }
             }
         }
     });
     
     updateChart();
+    updateTotal();
+}
+
+function updateChartType() {
+    chart.config.type = currentChartType;
+    chart.update();
+}
+
+function toggleCategoryFilter(category) {
+    if (categoryFilter === category) {
+        categoryFilter = null;
+    } else {
+        categoryFilter = category;
+    }
+    loadTransactions();
     updateTotal();
 }
 
